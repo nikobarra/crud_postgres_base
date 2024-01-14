@@ -1,0 +1,2 @@
+En esta ocasion realice un CRUD basico en python sobre consola de comandos windows, aclaro que fue sobre consola windows ya que hay un decorador de limpieza de pantalla que ejecuta comandos windows y de usarse en linux por ejemplo no funcionaria.
+el crud cuenta con las acciones comunes, pero todas fueron desarrolladas evitando en todos los casos que se generen errores por mala manipulacion por parte del usuario.
