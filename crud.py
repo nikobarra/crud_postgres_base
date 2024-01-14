@@ -18,6 +18,24 @@ def search_user(connect, cursor, user_id):
     return usuario
 
 
+def user_not_exists(user):
+    print("--------------------------------------")
+    print(f">>>> El usuario {user} no existe <<<<")
+    print("--------------------------------------")
+
+
+def user_success(action):
+    print("-----------------------------------------")
+    print(f"<<<< Usuario {action} correctamente >>>>")
+    print("-----------------------------------------")
+
+
+def cancel():
+    print("--------------------------------------")
+    print(">>>>>    accion cancelada    <<<<<")
+    print("--------------------------------------")
+
+
 # Menu
 def create_user(connect, cursor):
     """A) Crear usuario"""
@@ -27,9 +45,7 @@ def create_user(connect, cursor):
     values = (username, email)
     cursor.execute(query, values)
     connect.commit()
-    print("--------------------------------------")
-    print("      <<<< Usuario creado >>>>        ")
-    print("--------------------------------------")
+    user_success("Creado")
 
 
 def list_users(connect, cursor):
@@ -47,23 +63,36 @@ def update_user(connect, cursor):
     print("--------------------------------------")
     list_users(connect, cursor)
     print("--------------------------------------")
-    user_upd = int(input("Ingrese el ID del usuario a modificar: "))
+    user_upd = input("Ingrese el ID del usuario a modificar: ")
     print("--------------------------------------")
-    user_find = search_user(connect, cursor, user_upd)
-    if user_find:
-        username = input("Ingrese un nuevo nombre de usuario: ")
-        email = input("Ingrese un nuevo email: ")
-        query = "UPDATE users SET username = %s, email = %s WHERE id = %s"
-        values = (username, email, user_upd)
-        cursor.execute(query, values)
-        connect.commit()
-        print("--------------------------------------")
-        print(f"El usuario {username} a sido actualizado correctamente")
-        print("--------------------------------------")
+    if user_upd:
+        user_find = search_user(connect, cursor, user_upd)
+        if user_find:
+            username = input("Ingrese un nuevo nombre de usuario: ")
+            email = input("Ingrese un nuevo email: ")
+            if username != "" and email != "":
+                query = "UPDATE users SET username = %s, email = %s WHERE id = %s"
+                values = (username, email, user_upd)
+                upd = True
+            elif username != "" and email == "":
+                query = "UPDATE users SET username = %s WHERE id= %s"
+                values = (username, user_upd)
+                upd = True
+            elif username == "" and email != "":
+                query = "UPDATE users SET email = %s WHERE id= %s"
+                values = (email, user_upd)
+                upd = True
+            else:
+                cancel()
+                upd = False
+            if upd:
+                cursor.execute(query, values)
+                connect.commit()
+                user_success("Actualizado")
+        else:
+            user_not_exists(user_upd)
     else:
-        print("--------------------------------------")
-        print(f"El usuario {user_upd} no existe")
-        print("--------------------------------------")
+        cancel()
 
 
 def delete_user(connect, cursor):
@@ -80,17 +109,11 @@ def delete_user(connect, cursor):
             query = "DELETE FROM users WHERE id = %s"
             cursor.execute(query, (user_del,))
             connect.commit()
-            print("--------------------------------------")
-            print(f"<<< Usuario {user_del} eliminado correctamente >>>")
-            print("--------------------------------------")
+            user_success("Eliminado")
         else:
-            print("--------------------------------------")
-            print("accion cancelada")
-            print("--------------------------------------")
+            cancel()
     else:
-        print("--------------------------------------")
-        print(f"El usuario {user_del} no existe")
-        print("--------------------------------------")
+        user_not_exists(user_del)
 
 
 def default(*args):
