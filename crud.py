@@ -36,6 +36,15 @@ def cancel():
     print("--------------------------------------")
 
 
+def execute_query(connect, cursor, query, values, action):
+    try:
+        cursor.execute(query, values)
+        connect.commit()
+        user_success(action)
+    except Exception as e:
+        print(f"Error al {action} el usuario: {e}")
+
+
 # Menu
 def create_user(connect, cursor):
     """A) Crear usuario"""
@@ -43,9 +52,7 @@ def create_user(connect, cursor):
     email = input("Ingrese un email: ")
     query = "INSERT INTO users (username, email) VALUES (%s, %s)"
     values = (username, email)
-    cursor.execute(query, values)
-    connect.commit()
-    user_success("Creado")
+    execute_query(connect, cursor, query, values, "Creado")
 
 
 def list_users(connect, cursor):
@@ -74,11 +81,11 @@ def update_user(connect, cursor):
                 query = "UPDATE users SET username = %s, email = %s WHERE id = %s"
                 values = (username, email, user_upd)
                 upd = True
-            elif username != "" and email == "":
+            elif username != "":
                 query = "UPDATE users SET username = %s WHERE id= %s"
                 values = (username, user_upd)
                 upd = True
-            elif username == "" and email != "":
+            elif email != "":
                 query = "UPDATE users SET email = %s WHERE id= %s"
                 values = (email, user_upd)
                 upd = True
@@ -86,9 +93,7 @@ def update_user(connect, cursor):
                 cancel()
                 upd = False
             if upd:
-                cursor.execute(query, values)
-                connect.commit()
-                user_success("Actualizado")
+                execute_query(connect, cursor, query, values, "Actualizado")
         else:
             user_not_exists(user_upd)
     else:
@@ -107,9 +112,7 @@ def delete_user(connect, cursor):
         res = input("Esta seguro? s/n: ").lower()
         if res == "s":
             query = "DELETE FROM users WHERE id = %s"
-            cursor.execute(query, (user_del,))
-            connect.commit()
-            user_success("Eliminado")
+            execute_query(connect, cursor, query, (user_del,), "Eliminado")
         else:
             cancel()
     else:
