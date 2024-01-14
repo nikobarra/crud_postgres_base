@@ -1,5 +1,5 @@
 import psycopg2
-
+import os
 
 USERS_TABLE = """
 CREATE TABLE IF NOT EXISTS users(
@@ -9,6 +9,16 @@ CREATE TABLE IF NOT EXISTS users(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """
+
+
+def cleanup(function):
+    def wrapper(connect, cursor):
+        os.system("cls")
+        function(connect, cursor)
+        input("Presione enter para continuar")
+
+    wrapper.__doc__ = function.__doc__
+    return wrapper
 
 
 def search_user(connect, cursor, user_id):
@@ -46,15 +56,20 @@ def execute_query(connect, cursor, query, values, action):
 
 
 # Menu
+@cleanup
 def create_user(connect, cursor):
     """A) Crear usuario"""
     username = input("Ingrese el nombre de usuario: ")
     email = input("Ingrese un email: ")
-    query = "INSERT INTO users (username, email) VALUES (%s, %s)"
-    values = (username, email)
-    execute_query(connect, cursor, query, values, "Creado")
+    if username and email:
+        query = "INSERT INTO users (username, email) VALUES (%s, %s)"
+        values = (username, email)
+        execute_query(connect, cursor, query, values, "Creado")
+    else:
+        cancel()
 
 
+@cleanup
 def list_users(connect, cursor):
     """B) Listado de usuarios"""
     query = "SELECT id, username, email FROM users"
@@ -65,6 +80,7 @@ def list_users(connect, cursor):
     print("--------------------------------------")
 
 
+@cleanup
 def update_user(connect, cursor):
     """C) Actualizar usuario"""
     print("--------------------------------------")
@@ -100,25 +116,30 @@ def update_user(connect, cursor):
         cancel()
 
 
+@cleanup
 def delete_user(connect, cursor):
     """D) Borrar usuario"""
     print("--------------------------------------")
     list_users(connect, cursor)
-    user_del = int(input("Que usuario desea eliminar? :"))
+    user_del = input("Que usuario desea eliminar? :")
     print("--------------------------------------")
-    query = "SELECT id FROM users WHERE id = %s"
-    user_find = search_user(connect, cursor, user_del)
-    if user_find:
-        res = input("Esta seguro? s/n: ").lower()
-        if res == "s":
-            query = "DELETE FROM users WHERE id = %s"
-            execute_query(connect, cursor, query, (user_del,), "Eliminado")
+    if user_del:
+        query = "SELECT id FROM users WHERE id = %s"
+        user_find = search_user(connect, cursor, user_del)
+        if user_find:
+            res = input("Esta seguro? s/n: ").lower()
+            if res == "s":
+                query = "DELETE FROM users WHERE id = %s"
+                execute_query(connect, cursor, query, (user_del,), "Eliminado")
+            else:
+                cancel()
         else:
-            cancel()
+            user_not_exists(user_del)
     else:
-        user_not_exists(user_del)
+        cancel()
 
 
+@cleanup
 def default(*args):
     print("opción no valida")
     print("--------------------------------------")
