@@ -16,6 +16,7 @@ def cleanup(function):
         os.system("cls")
         function(connect, cursor)
         input("Presione enter para continuar")
+        os.system("cls")
 
     wrapper.__doc__ = function.__doc__
     return wrapper
